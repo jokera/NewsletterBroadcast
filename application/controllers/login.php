@@ -18,17 +18,20 @@ class Login extends CI_Controller {
         $val->set_rules('username', 'Username', 'trim|required|min_length[3]');
         $val->set_rules('password', 'Password', 'trim|required|min_length[4]');
         if ($val->run()) {
-//todo query
             $this->load->model('users_model');
             if ($this->users_model->validate_login()) {
-                $data = array(
-                    'is_logged' => true,
-                    'username' => $this->input->post('username')
-                );
-                $this->session->set_userdata($data);
-                redirect('members');
+                if ($this->users_model->is_active() == FALSE) {
+                    redirect('login');
+                } else {
+                    $data = array(
+                        'is_logged' => true,
+                        'username' => $this->input->post('username')
+                    );
+                    $this->session->set_userdata($data);
+                    redirect('members');
+                }
             } else {
-//error message
+
 //flash data-set value into user session only for the next request for the server
 
                 $this->session->set_flashdata('errmsg', 'Invalid username or password');
@@ -58,13 +61,13 @@ class Login extends CI_Controller {
 
         $val->set_error_delimiters('<p class ="validation_err">', '</p>');
         if ($val->run()) {
-//query
+
             $this->load->model('users_model');
             if ($this->users_model->_check_username()) {
                 if ($this->users_model->_check_email()) {
                     $activation_code = $this->_gen_pass(32);
                     if ($this->_send_email($activation_code)) {
-//query
+
                         if ($this->users_model->insert_user($activation_code)) {
                             echo 'Registration is succesful.Check your email';
                         } else {
@@ -122,8 +125,6 @@ class Login extends CI_Controller {
                 . site_url('login/activate') . '/' . $username . '/' . $code . '';
         $this->email->message($message);
         if ($this->email->send()) {
-// echo 'Email has been succesfuly sent.Check your mail';
-
             return TRUE;
         } else {
             show_error($this->email->print_debugger());

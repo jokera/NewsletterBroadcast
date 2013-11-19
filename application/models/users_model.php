@@ -82,4 +82,24 @@ class Users_model extends CI_Model {
         }
     }
 
+    function is_active() {
+        $username = $this->input->post('username');
+
+        $this->db->select('active,activation_code');
+        $this->db->where('username', $username);
+        $query = $this->db->get('members');
+        if ($query->num_rows() == 1) {
+            $row = $query->row();
+            if ($row->active == 0 && $row->activation_code != '') {
+                $this->session->set_flashdata('errmsg', 'Your Account is not activated yet. Please check your mail');
+                return false;
+            } else if ($row->active == 0 && $row->activation_code == '') {
+                $this->session->set_flashdata('errmsg', 'Your Account has been disabled for some reason.Contact Billing team');
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
 }
