@@ -9,8 +9,6 @@ class Members extends CI_Controller {
 
     function index() {
 
-
-
         $this->home();
     }
 
